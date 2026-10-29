@@ -21,7 +21,7 @@ Reinforcement learning from human feedback is the classical post-training recipe
 instruction-following assistants. It has three stages: supervised fine-tuning, training a
 **reward model** on human preference comparisons, and optimizing the policy against that reward
 with a clipped policy gradient while a KL penalty holds it near the reference. This project
-implements the whole pipeline **from first principles** on a tractable alignment task: a
+implements the whole pipeline **from scratch** on a tractable alignment task: a
 reference fit by **behavior cloning**, a **Bradley-Terry reward model** fit by convex logistic
 regression, and **PPO** with a clipped surrogate and KL-shaped reward, all with **zero runtime
 dependencies** and no automatic differentiation. It also demonstrates the failure mode that
