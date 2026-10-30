@@ -133,6 +133,11 @@ def mean_kl(domain: Domain, policy: SoftmaxPolicy, reference: SoftmaxPolicy) -> 
             policy_distribution, reference_distribution, strict=True
         ):
             if probability > 0.0:
+                if reference_probability <= 0.0:
+                    # The policy puts mass where the reference puts none, so the
+                    # KL divergence is infinite; avoid dividing by zero.
+                    divergence = math.inf
+                    break
                 divergence += probability * math.log(probability / reference_probability)
         total += divergence
     return total / domain.n_prompts
