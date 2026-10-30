@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from rlhf_reward_model.domain import Domain, demonstrations, preferences
+from rlhf_reward_model.domain import Domain, _bradley_terry, demonstrations, preferences
 from rlhf_reward_model.evaluation import (
     evaluate,
     expected_reward,
@@ -60,3 +60,11 @@ def test_evaluate_report_is_consistent() -> None:
     assert report.mean_kl_to_reference >= 0.0
     assert report.reference_reward <= report.optimal_reward
     assert report.reward_model_ceiling <= report.optimal_reward + 1e-9
+
+
+def test_bradley_terry_is_stable_for_extreme_margins() -> None:
+    # Regression: 1 / (1 + exp(-margin)) overflowed for large negative margins.
+    assert _bradley_terry(-710.0) >= 0.0
+    assert _bradley_terry(-710.0) < 1e-100
+    assert _bradley_terry(710.0) == 1.0
+    assert _bradley_terry(0.0) == 0.5
