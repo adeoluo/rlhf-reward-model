@@ -77,7 +77,12 @@ class Domain:
 
 
 def _bradley_terry(margin: float) -> float:
-    return 1.0 / (1.0 + math.exp(-margin))
+    # Numerically stable logistic: exp(-margin) overflows for large negative
+    # margins, so use the positive-exponent branch when the margin is negative.
+    if margin >= 0.0:
+        return 1.0 / (1.0 + math.exp(-margin))
+    exp_margin = math.exp(margin)
+    return exp_margin / (1.0 + exp_margin)
 
 
 def demonstrations(
