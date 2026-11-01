@@ -68,6 +68,25 @@ The reward model recovers the hidden reward almost exactly (**r = 0.998**), and 
 that reward **closes 96.6 percent of the true reward gap** from the supervised reference to the
 optimum, while the KL penalty keeps the policy anchored.
 
+### Scale
+
+`benchmarks/scale.py` fits the Bradley-Terry reward model on progressively larger synthetic
+preference datasets (120 full-batch iterations each) and reports wall-clock time, throughput,
+peak traced memory (`tracemalloc`), and held-out ranking accuracy. Peak memory grows linearly
+with the resident dataset, per-pair throughput stays roughly flat, and accuracy saturates once
+preferences are plentiful.
+
+| preference pairs | seconds | pairs/sec | peak MiB | held-out accuracy |
+|---:|---:|---:|---:|---:|
+| 2,000 | 2.31 | 870 | 0.20 | 0.966 |
+| 8,000 | 10.77 | 740 | 0.80 | 0.984 |
+| 16,000 | 21.13 | 760 | 1.60 | 1.000 |
+
+Honest caveat: the data is synthetic, this is a pure-Python from-scratch implementation, and it
+is **not** benchmarked against compiled numerical libraries; wall-clock and throughput were
+measured on a shared development machine and will vary. Reproduce with
+`uv run python benchmarks/scale.py`.
+
 ## Reward over-optimization (Goodhart's law)
 
 A reward model is a proxy. Optimizing a proxy too hard eventually hurts the true objective. With
