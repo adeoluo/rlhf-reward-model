@@ -216,6 +216,16 @@ latency metrics in Prometheus text format). A production-style stress benchmark
 path and tradeoffs are in [docs/SCALING.md](docs/SCALING.md) and a full walk-through is in the
 [case study](docs/CASE_STUDY.md).
 
+### Demos
+
+Recorded from real runs with [vhs](https://github.com/charmbracelet/vhs); each tape is in `docs/demo/`.
+
+Reward model accuracy, then reward overoptimization as the policy is pushed further.
+
+<p align="center">
+  <img src="docs/demo/evaluate.gif" alt="Reward model accuracy, then reward overoptimization as the policy is pushed further" width="860">
+</p>
+
 ## Design decisions
 
 - **A reward model and PPO, not Direct Preference Optimization.** The classical pipeline keeps
