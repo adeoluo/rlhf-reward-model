@@ -1,16 +1,3 @@
----
-title: System Architecture - RLHF Reward Model
-config:
-  theme: base
-  themeVariables:
-    fontFamily: "Inter, system-ui, sans-serif"
-    primaryColor: "#F8FAFC"
-    primaryBorderColor: "#1E293B"
-    primaryTextColor: "#1E293B"
-    lineColor: "#64748B"
-    clusterBkg: "#EEF2FF"
-    clusterBorder: "#94A3B8"
----
 flowchart TD
     classDef edge     fill:#F59E0B,stroke:#1E293B,color:#1E293B,stroke-width:1px;
     classDef core     fill:#6366F1,stroke:#1E293B,color:#ffffff,stroke-width:1px;
@@ -18,39 +5,70 @@ flowchart TD
     classDef control  fill:#0EA5E9,stroke:#1E293B,color:#ffffff,stroke-width:1px;
     classDef obs      fill:#CBD5E1,stroke:#1E293B,color:#1E293B,stroke-width:1px;
 
-    Client([Client]):::edge
+    CLI(["CLI<br/>evaluate | compare | methods | overoptimize | serve"]):::edge
+    Client(["HTTP client"]):::edge
 
     subgraph Task["Alignment task (hidden gold reward)"]
         direction TB
-        Reward[(Gold reward weight)]:::data
-        Demos[(Demonstrations)]:::data
-        Prefs[(Preferences<br/>Bradley-Terry annotator)]:::data
+        Gold[("Gold reward weights<br/>contextual bandit features")]:::data
+        Demos[("Demonstrations<br/>weakly aligned teacher")]:::data
+        Prefs[("Preference pairs<br/>Bradley-Terry annotator, train + held-out")]:::data
     end
 
-    subgraph Train["Three-stage RLHF (once at startup)"]
+    subgraph Train["Post-training methods (closed-form gradients)"]
         direction TB
+        Runner["Pipeline runner<br/>run_pipeline, seeded"]:::control
         SFT["Supervised fine-tuning<br/>behavior cloning"]:::core
         RM["Reward model<br/>Bradley-Terry logistic regression"]:::core
-        PPO["PPO<br/>clipped surrogate, KL penalty"]:::core
+        PPO["PPO<br/>clipped surrogate, KL-shaped reward"]:::core
+        DPO["DPO<br/>implicit reward margin, no reward model"]:::core
     end
 
-    Reference[(Reference policy)]:::data
-    RewardModel[(Reward model)]:::data
-    Policy[(PPO policy)]:::data
-
-    subgraph Edge["Service layer (stdlib HTTP, stateless)"]
+    subgraph State["Trained models (in memory)"]
         direction TB
-        Router["Router + validation<br/>/health | /ready | /metrics | /report | /score"]:::core
+        Reference[("Reference policy<br/>log-linear softmax")]:::data
+        RewardModel[("Learned reward model")]:::data
+        Policy[("PPO policy")]:::data
     end
 
-    Eval["Evaluation<br/>reward-model fidelity, true reward, KL, over-optimization"]:::obs
+    subgraph Edge["Interfaces (stdlib HTTP, trained at startup)"]
+        direction TB
+        Router["Router<br/>/health | /ready | /report | /score"]:::core
+        Validate["Validation<br/>integer prompt in range"]:::control
+    end
 
-    Reward --> Demos --> SFT --> Reference
-    Reward --> Prefs --> RM --> RewardModel
-    Reference --> PPO
-    RewardModel --> PPO --> Policy
-    RewardModel -.-> Eval
-    Policy --> Eval
-    Client -->|JSON request| Router
-    Router -->|prompt| Policy
-    Policy -->|rewards and distributions| Router -->|JSON response| Client
+    subgraph Eval["Evaluation, studies, and observability"]
+        direction TB
+        Report["RLHF report<br/>RM accuracy + correlation, true reward, KL"]:::obs
+        Compare["PPO vs DPO comparison<br/>final quality, sample efficiency"]:::obs
+        Overopt["Over-optimization study<br/>misspecified RM, decreasing beta"]:::obs
+        Score["Score response<br/>true + learned reward, probabilities"]:::obs
+        Metrics["Route metrics<br/>Prometheus GET /metrics"]:::obs
+    end
+
+    CLI -->|evaluate, compare| Runner
+    Gold -->|teacher| Demos
+    Gold -->|annotator| Prefs
+    Runner -->|stage 1| SFT
+    Runner -->|stage 2| RM
+    Runner -->|stage 3| PPO
+    Demos -->|state-action pairs| SFT --> Reference
+    Prefs -->|train pairs| RM --> RewardModel
+    Reference -.->|KL anchor| PPO
+    RewardModel -.->|learned reward| PPO
+    PPO --> Policy
+    Prefs -->|train pairs| DPO
+    Reference -.->|reference log-probs| DPO
+    Policy -->|true reward, KL| Report
+    RewardModel -.->|held-out ranking| Report
+    PPO -->|PPO policy| Compare
+    DPO -->|DPO policy| Compare
+    PPO -->|beta sweep| Overopt
+    CLI -->|methods| Compare
+    CLI -->|overoptimize| Overopt
+    Client -->|JSON request| Router -->|POST /score| Validate
+    Validate -->|prompt| Score
+    Policy -.->|distributions| Score
+    RewardModel -.->|learned rewards| Score
+    Router -->|GET /report| Report
+    Router -.-> Metrics

@@ -33,9 +33,15 @@ differentiation. Finally it demonstrates the failure mode that makes reward mode
   <img src="docs/architecture/architecture.svg" alt="Architecture diagram" width="860">
 </p>
 
-A hidden gold reward defines the truth. Demonstrations train a reference; preferences train a
-reward model; PPO optimizes the policy against the reward model. The learner never sees the
-true reward. See the [ADRs](docs/adr/) for the key decisions.
+<sub>Legend: amber = entry points and external systems, indigo = core logic, green = data and state, blue = validation and control, grey = observability and outputs.</sub>
+
+A hidden gold reward defines the truth and generates the demonstrations and the
+Bradley-Terry preference pairs. The pipeline runner behavior-clones a reference, fits a reward
+model on the preferences, and optimizes a PPO policy against the learned reward with a KL
+anchor to the reference; DPO fits a policy straight to the same preferences. The learner never
+sees the true reward. The report, the PPO versus DPO comparison, and the over-optimization
+study measure the outcome against the gold reward, and the HTTP service serves the trained
+models with per-route metrics. See the [ADRs](docs/adr/) for the key decisions.
 
 ### The pipeline
 
@@ -65,6 +71,9 @@ true reward. See the [ADRs](docs/adr/) for the key decisions.
 - **ppo**: the clipped PPO surrogate with a KL-shaped reward and a per-prompt baseline.
 - **evaluation**: reward-model fidelity, true reward, KL, and the reward-model ceiling.
 - **pipeline**: the end-to-end three-stage run.
+- **dpo**: Direct Preference Optimization with an exact, hand-derived gradient.
+- **comparison**: the PPO versus DPO head-to-head on final quality and sample efficiency.
+- **overoptimization**: the reward over-optimization study with a misspecified reward model.
 
 ## Results
 
