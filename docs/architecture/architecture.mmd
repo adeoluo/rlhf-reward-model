@@ -5,70 +5,44 @@ flowchart LR
     classDef control  fill:#0EA5E9,stroke:#1E293B,color:#ffffff,stroke-width:1px;
     classDef obs      fill:#CBD5E1,stroke:#1E293B,color:#1E293B,stroke-width:1px;
 
-    CLI(["CLI<br/>evaluate | compare | methods | overoptimize | serve"]):::edge
-    Client(["HTTP client"]):::edge
-
-    subgraph Task["Alignment task (hidden gold reward)"]
+    subgraph Interfaces["Interfaces"]
         direction TB
-        Gold[("Gold reward weights<br/>contextual bandit features")]:::data
-        Demos[("Demonstrations<br/>weakly aligned teacher")]:::data
-        Prefs[("Preference pairs<br/>Bradley-Terry annotator, train + held-out")]:::data
+        CLI["CLI<br/>evaluate, methods, ..."]:::edge
+        Client(["HTTP client"]):::edge
+        Router["HTTP router<br/>/report /score"]:::core
+        Validate["Validation<br/>prompt in range"]:::control
+        CLI ~~~ Client --> Router --> Validate
     end
 
-    subgraph Train["Post-training methods (closed-form gradients)"]
+    subgraph Task["Alignment task"]
         direction TB
-        Runner["Pipeline runner<br/>run_pipeline, seeded"]:::control
-        SFT["Supervised fine-tuning<br/>behavior cloning"]:::core
-        RM["Reward model<br/>Bradley-Terry logistic regression"]:::core
-        PPO["PPO<br/>clipped surrogate, KL-shaped reward"]:::core
-        DPO["DPO<br/>implicit reward margin, no reward model"]:::core
+        Gold[("Gold reward<br/>hidden from learner")]:::data
+        Demos[("Demonstrations<br/>weak teacher")]:::data
+        Prefs[("Preference pairs<br/>Bradley-Terry")]:::data
+        Gold --> Demos
+        Gold --> Prefs
     end
 
-    subgraph State["Trained models (in memory)"]
+    subgraph Methods["Post-training methods"]
         direction TB
-        Reference[("Reference policy<br/>log-linear softmax")]:::data
-        RewardModel[("Learned reward model")]:::data
-        Policy[("PPO policy")]:::data
+        SFT["SFT<br/>behavior cloning"]:::core
+        RM["Reward model<br/>Bradley-Terry fit"]:::core
+        PPO["PPO<br/>clipped, KL-shaped"]:::core
+        DPO["DPO<br/>no reward model"]:::core
+        Policies[("Trained policies<br/>reference, PPO, DPO")]:::data
+        DPO ~~~ SFT ~~~ RM --> PPO --> Policies
     end
 
-    subgraph Edge["Interfaces (stdlib HTTP, trained at startup)"]
+    subgraph Obs["Evaluation and studies"]
         direction TB
-        Router["Router<br/>/health | /ready | /report | /score"]:::core
-        Validate["Validation<br/>integer prompt in range"]:::control
+        Report["RLHF report<br/>RM fidelity, reward, KL"]:::obs
+        Compare["PPO vs DPO<br/>quality, data efficiency"]:::obs
+        Overopt["Over-optimization<br/>proxy vs true reward"]:::obs
+        Score["Score response<br/>rewards, probabilities"]:::obs
+        Metrics["Route metrics<br/>Prometheus text"]:::obs
+        Report ~~~ Compare ~~~ Overopt ~~~ Score ~~~ Metrics
     end
 
-    subgraph Eval["Evaluation, studies, and observability"]
-        direction TB
-        Report["RLHF report<br/>RM accuracy + correlation, true reward, KL"]:::obs
-        Compare["PPO vs DPO comparison<br/>final quality, sample efficiency"]:::obs
-        Overopt["Over-optimization study<br/>misspecified RM, decreasing beta"]:::obs
-        Score["Score response<br/>true + learned reward, probabilities"]:::obs
-        Metrics["Route metrics<br/>Prometheus GET /metrics"]:::obs
-    end
-
-    CLI -->|evaluate, compare| Runner
-    Gold -->|teacher| Demos
-    Gold -->|annotator| Prefs
-    Runner -->|stage 1| SFT
-    Runner -->|stage 2| RM
-    Runner -->|stage 3| PPO
-    Demos -->|state-action pairs| SFT --> Reference
-    Prefs -->|train pairs| RM --> RewardModel
-    Reference -.->|KL anchor| PPO
-    RewardModel -.->|learned reward| PPO
-    PPO --> Policy
-    Prefs -->|train pairs| DPO
-    Reference -.->|reference log-probs| DPO
-    Policy -->|true reward, KL| Report
-    RewardModel -.->|held-out ranking| Report
-    PPO -->|PPO policy| Compare
-    DPO -->|DPO policy| Compare
-    PPO -->|beta sweep| Overopt
-    CLI -->|methods| Compare
-    CLI -->|overoptimize| Overopt
-    Client -->|JSON request| Router -->|POST /score| Validate
-    Validate -->|prompt| Score
-    Policy -.->|distributions| Score
-    RewardModel -.->|learned rewards| Score
-    Router -->|GET /report| Report
-    Router -.-> Metrics
+    Interfaces -->|train, query| Methods
+    Task -->|demos, preferences| Methods
+    Methods -->|trained models| Obs
