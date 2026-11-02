@@ -1,16 +1,14 @@
 <h1 align="center">RLHF Reward Model</h1>
 
 <p align="center">
-  <em>Classical RLHF built from scratch: a Bradley-Terry reward model with PPO, a from-scratch DPO implementation and a head-to-head PPO-vs-DPO comparison, and an explicit reward over-optimization study, all dependency-free.</em>
+  <em>Classical RLHF built from scratch: a Bradley-Terry reward model with PPO, a from-scratch DPO implementation and a head-to-head PPO-vs-DPO comparison, and an explicit reward over-optimization study.</em>
 </p>
 
 <p align="center">
-  <a href="https://github.com/adeoluo/rlhf-reward-model/actions/workflows/ci.yml"><img alt="Continuous integration" src="https://github.com/adeoluo/rlhf-reward-model/actions/workflows/ci.yml/badge.svg"></a>
-  <img alt="Coverage" src="https://img.shields.io/badge/coverage-87%25-brightgreen">
+  <a href="https://github.com/adeoluo/rlhf-reward-model/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/adeoluo/rlhf-reward-model/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/adeoluo/rlhf-reward-model/releases"><img alt="Release" src="https://img.shields.io/github/v/release/adeoluo/rlhf-reward-model"></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.11%20%7C%203.12-blue">
-  <img alt="Type checked" src="https://img.shields.io/badge/mypy-strict-blue">
-  <img alt="Runtime dependencies" src="https://img.shields.io/badge/runtime%20deps-0-brightgreen">
-  <img alt="License" src="https://img.shields.io/badge/license-MIT-green">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-green"></a>
 </p>
 
 ---
@@ -25,21 +23,21 @@ implements the whole pipeline **from scratch** on a tractable alignment task: a
 reference fit by **behavior cloning**, a **Bradley-Terry reward model** fit by convex logistic
 regression, and **PPO** with a clipped surrogate and KL-shaped reward. It also implements the
 reward-model-free alternative, **Direct Preference Optimization (DPO)**, and runs a **head-to-head
-PPO-vs-DPO comparison** on the same task - all with **zero runtime dependencies** and no automatic
+PPO-vs-DPO comparison** on the same task, all with no automatic
 differentiation. Finally it demonstrates the failure mode that makes reward modeling hard:
 **reward over-optimization**.
 
 ## Architecture
 
 <p align="center">
-  <img src="docs/architecture/architecture.svg" alt="System architecture" width="900">
+  <img src="docs/architecture/architecture.svg" alt="Architecture diagram" width="860">
 </p>
 
 A hidden gold reward defines the truth. Demonstrations train a reference; preferences train a
 reward model; PPO optimizes the policy against the reward model. The learner never sees the
 true reward. See the [ADRs](docs/adr/) for the key decisions.
 
-## The pipeline
+### The pipeline
 
 - **Supervised fine-tuning.** A reference policy is behavior-cloned from weakly aligned
   demonstrations by penalized maximum likelihood.
@@ -55,7 +53,18 @@ true reward. See the [ADRs](docs/adr/) for the key decisions.
 - **DPO.** Direct Preference Optimization skips the reward model and fits the policy straight to
   the preferences with a single logistic loss on the implicit reward margin
   `beta * log(policy / reference)`. For the log-linear policy the gradient is exact and
-  dependency-free, so PPO and DPO share the same optimizer and differ only in method.
+  hand-derived, so PPO and DPO share the same optimizer and differ only in method.
+
+### Components
+
+- **domain**: the alignment task, the hidden gold reward, the demonstration teacher, and the
+  Bradley-Terry preference annotator.
+- **policy**: a log-linear softmax policy with exact distributions and gradients.
+- **sft**: behavior cloning of the reference.
+- **reward_model**: the Bradley-Terry reward model, with an optional misspecified variant.
+- **ppo**: the clipped PPO surrogate with a KL-shaped reward and a per-prompt baseline.
+- **evaluation**: reward-model fidelity, true reward, KL, and the reward-model ceiling.
+- **pipeline**: the end-to-end three-stage run.
 
 ## Results
 
@@ -74,37 +83,18 @@ The reward model recovers the hidden reward almost exactly (**r = 0.998**), and 
 that reward **closes 96.6 percent of the true reward gap** from the supervised reference to the
 optimum, while the KL penalty keeps the policy anchored.
 
-### Scale
-
-`benchmarks/scale.py` fits the Bradley-Terry reward model on progressively larger synthetic
-preference datasets (120 full-batch iterations each) and reports wall-clock time, throughput,
-peak traced memory (`tracemalloc`), and held-out ranking accuracy. Peak memory grows linearly
-with the resident dataset, per-pair throughput stays roughly flat, and accuracy saturates once
-preferences are plentiful.
-
-| preference pairs | seconds | pairs/sec | peak MiB | held-out accuracy |
-|---:|---:|---:|---:|---:|
-| 2,000 | 2.31 | 870 | 0.20 | 0.966 |
-| 8,000 | 10.77 | 740 | 0.80 | 0.984 |
-| 16,000 | 21.13 | 760 | 1.60 | 1.000 |
-
-Honest caveat: the data is synthetic, this is a pure-Python from-scratch implementation, and it
-is **not** benchmarked against compiled numerical libraries; wall-clock and throughput were
-measured on a shared development machine and will vary. Reproduce with
-`uv run python benchmarks/scale.py`.
-
-## PPO vs DPO
+### PPO vs DPO
 
 > Reproduce with `python -m rlhf_reward_model methods` (or `uv run python benchmarks/compare_methods.py`).
 > PPO and DPO are given the **same** reference, the **same** preferences, and the **same**
 > full-batch optimizer, so the comparison isolates the method.
 
-| Method | true reward | gap closed (reference → optimal) | mean KL to reference |
+| Method | true reward | gap closed (reference to optimal) | mean KL to reference |
 |---|---:|---:|---:|
 | **PPO** (reward model + clipped policy gradient) | **1.1247** | **96.6%** | 1.67 |
 | **DPO** (direct, no reward model) | 1.0839 | 89.2% | **1.08** |
 
-Sample efficiency - true reward reached as the number of preference pairs grows:
+Sample efficiency, the true reward reached as the number of preference pairs grows:
 
 | preference pairs | PPO | DPO |
 |---:|---:|---:|
@@ -114,8 +104,8 @@ Sample efficiency - true reward reached as the number of preference pairs grows:
 | 2,000 | 1.0897 | 1.0740 |
 | 4,000 | **1.1247** | 1.0839 |
 
-Honest reading: on this synthetic task, **PPO reaches a higher true reward** (closing 96.6% of
-the gap vs. 89.2% for DPO) and stays ahead at every data budget - because its explicit reward
+Reading the tables: on this synthetic task, **PPO reaches a higher true reward** (closing 96.6% of
+the gap vs. 89.2% for DPO) and stays ahead at every data budget, because its explicit reward
 model recovers the hidden reward almost exactly (**r = 0.998**), giving the policy a dense,
 well-specified target to optimize. **DPO is simpler** (no reward model, one loss) and reaches a
 comparable policy at a **lower KL to the reference** (1.08 vs. 1.67), i.e. a gentler update. The
@@ -123,7 +113,7 @@ gap is small and specific to this well-specified linear setting; the point is th
 apples-to-apples comparison of the two methods built from the same parts, not a universal claim
 that one dominates. Both betas are tuned so neither method is handicapped.
 
-## Reward over-optimization (Goodhart's law)
+### Reward over-optimization (Goodhart's law)
 
 > Reproduce with `python -m rlhf_reward_model overoptimize` (exposed as the library's
 > `overoptimization_study`).
@@ -143,14 +133,24 @@ KL penalty keeps raising the proxy reward while the **true reward peaks and then
 This is the central cautionary result of reward modeling, reproduced from scratch: the proxy
 rises monotonically, the truth turns over, and the KL budget is the control knob.
 
-## Demonstration
+### Scale
 
-```text
-$ python -m rlhf_reward_model compare
-Per-prompt greedy choice (reference -> PPO policy, with the gold-best response):
-  prompt 0: reference r3 -> policy r1  (gold-best r1, match)
-  ...
-```
+`benchmarks/scale.py` fits the Bradley-Terry reward model on progressively larger synthetic
+preference datasets (120 full-batch iterations each) and reports wall-clock time, throughput,
+peak traced memory (`tracemalloc`), and held-out ranking accuracy. Peak memory grows linearly
+with the resident dataset, per-pair throughput stays roughly flat, and accuracy saturates once
+preferences are plentiful.
+
+| preference pairs | seconds | pairs/sec | peak MiB | held-out accuracy |
+|---:|---:|---:|---:|---:|
+| 2,000 | 2.31 | 870 | 0.20 | 0.966 |
+| 8,000 | 10.77 | 740 | 0.80 | 0.984 |
+| 16,000 | 21.13 | 760 | 1.60 | 1.000 |
+
+Caveat: the data is synthetic, this is a from-scratch Python implementation, and it
+is **not** benchmarked against compiled numerical libraries; wall-clock and throughput were
+measured on a shared development machine and will vary. Reproduce with
+`uv run python benchmarks/scale.py`.
 
 ## Quickstart
 
@@ -165,7 +165,18 @@ python -m rlhf_reward_model methods         # PPO vs DPO head to head
 python -m rlhf_reward_model overoptimize    # the reward over-optimization curve
 ```
 
-Use the pieces directly:
+## Usage
+
+### Demonstration
+
+```text
+$ python -m rlhf_reward_model compare
+Per-prompt greedy choice (reference -> PPO policy, with the gold-best response):
+  prompt 0: reference r3 -> policy r1  (gold-best r1, match)
+  ...
+```
+
+### Library
 
 ```python
 from rlhf_reward_model import run_pipeline, PipelineConfig, compare_ppo_dpo
@@ -177,9 +188,9 @@ comparison = compare_ppo_dpo()  # train PPO and DPO on the same task
 print(comparison.format())
 ```
 
-## Running the service
+### HTTP service
 
-A dependency-free HTTP service runs the pipeline once at startup and serves reward queries:
+A standard-library HTTP service runs the pipeline once at startup and serves reward queries:
 
 ```bash
 python -m rlhf_reward_model serve --port 8000
@@ -196,17 +207,6 @@ latency metrics in Prometheus text format). A production-style stress benchmark
 path and tradeoffs are in [docs/SCALING.md](docs/SCALING.md) and a full walk-through is in the
 [case study](docs/CASE_STUDY.md).
 
-## Components
-
-- **domain** - the alignment task, the hidden gold reward, the demonstration teacher, and the
-  Bradley-Terry preference annotator.
-- **policy** - a log-linear softmax policy with exact distributions and gradients.
-- **sft** - behavior cloning of the reference.
-- **reward_model** - the Bradley-Terry reward model, with an optional misspecified variant.
-- **ppo** - the clipped PPO surrogate with a KL-shaped reward and a per-prompt baseline.
-- **evaluation** - reward-model fidelity, true reward, KL, and the reward-model ceiling.
-- **pipeline** - the end-to-end three-stage run.
-
 ## Design decisions
 
 - **A reward model and PPO, not Direct Preference Optimization.** The classical pipeline keeps
@@ -215,6 +215,37 @@ path and tradeoffs are in [docs/SCALING.md](docs/SCALING.md) and a full walk-thr
 - **A clipped surrogate with a KL-shaped reward.** The standard PPO objective with the KL
   penalty folded into the reward, over a log-linear policy with an exact gradient.
   ([ADR-0003](docs/adr/0003-clipped-ppo.md))
+- **Recording decisions.** ([ADR-0001](docs/adr/0001-record-architecture-decisions.md))
+
+## Testing
+
+```bash
+make test                     # uv run pytest
+make coverage                 # pytest with an 80% coverage gate
+```
+
+The suite has 24 deterministic, offline tests in six modules under `tests/`:
+
+- **Core** (`test_core.py`): the reward model recovers the true reward, a misspecified reward
+  model is worse, PPO improves the policy's true reward, the evaluation report is consistent,
+  and Bradley-Terry is numerically stable at extreme margins.
+- **DPO** (`test_dpo.py`): DPO improves the true reward, its loss decreases with training, it
+  widens the chosen margin on average, its gradient vanishes with no data, and it is
+  deterministic.
+- **Gradient parity** (`test_gradient_parity.py`): an independent check that recomputes the
+  DPO loss with NumPy and differentiates it by finite differences, asserting agreement with
+  the hand-derived gradient. NumPy is an optional `validation` dependency group, so the test is
+  skipped when it is not installed (`uv sync --group validation` to enable it).
+- **Method studies** (`test_methods.py`): PPO and DPO both improve over the reference, the
+  sample-efficiency table matches the requested sizes, the over-optimization curve turns over,
+  and the study output is well formed.
+- **CLI and HTTP service** (`test_cli.py`, `test_service.py`): the `methods` and
+  `overoptimize` commands (and that a subcommand is required), and the request handler for
+  health, readiness, `/report`, `/score`, unknown routes, and metrics.
+
+CI (`.github/workflows/ci.yml`) runs `ruff format --check`, `ruff check`, `mypy src`, and
+`pytest` with an 80% coverage gate on Python 3.11 and 3.12, then builds the package and the
+Docker image.
 
 ## Responsible AI
 
@@ -240,5 +271,4 @@ path and tradeoffs are in [docs/SCALING.md](docs/SCALING.md) and a full walk-thr
 
 ## License
 
-[MIT](LICENSE). Part of an artificial intelligence engineering portfolio by
-[adeoluo](https://github.com/adeoluo).
+Released under the [MIT License](LICENSE).

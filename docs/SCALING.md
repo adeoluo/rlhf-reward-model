@@ -36,6 +36,6 @@ with the preference-set size.
   estimation, and automatic differentiation, trading transparency for scale.
 
 ## Limits
-Training is pure Python and single-threaded, ideal for study and modest data but not for
+Training is single-threaded Python, ideal for study and modest data but not for
 web-scale corpora. The controlled task bounds the conclusions; scaling to real RLHF is a data,
 systems, and modeling problem, not a throughput one.

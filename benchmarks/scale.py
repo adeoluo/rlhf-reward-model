@@ -79,7 +79,7 @@ def measure(
 
 
 def main() -> None:
-    print("Synthetic preference data; a pure-Python, from-scratch reward model.")
+    print("Synthetic preference data; a from-scratch Python reward model.")
     print("Wall-clock is not competitive with compiled numerical libraries.")
     print(f"Fitting the Bradley-Terry reward model for {_ITERATIONS} full-batch iterations.\n")
 

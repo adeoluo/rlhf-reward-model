@@ -1,4 +1,4 @@
-"""A dependency-free HTTP service exposing the RLHF reward model and policy.
+"""A standard-library HTTP service exposing the RLHF reward model and policy.
 
 The service runs the full pipeline once at startup (supervised fine-tuning, reward
 modeling, PPO) and then answers read-only queries about the reward model and the

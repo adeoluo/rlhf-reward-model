@@ -11,7 +11,7 @@ config:
     clusterBkg: "#EEF2FF"
     clusterBorder: "#94A3B8"
 ---
-flowchart TB
+flowchart TD
     classDef edge     fill:#F59E0B,stroke:#1E293B,color:#1E293B,stroke-width:1px;
     classDef core     fill:#6366F1,stroke:#1E293B,color:#ffffff,stroke-width:1px;
     classDef data     fill:#10B981,stroke:#1E293B,color:#ffffff,stroke-width:1px;
@@ -40,8 +40,7 @@ flowchart TB
 
     subgraph Edge["Service layer (stdlib HTTP, stateless)"]
         direction TB
-        Router["Router<br/>/health | /ready | /metrics | /report | /score"]:::core
-        Validate["Validation<br/>prompt in range"]:::control
+        Router["Router + validation<br/>/health | /ready | /metrics | /report | /score"]:::core
     end
 
     Eval["Evaluation<br/>reward-model fidelity, true reward, KL, over-optimization"]:::obs
@@ -52,6 +51,6 @@ flowchart TB
     RewardModel --> PPO --> Policy
     RewardModel -.-> Eval
     Policy --> Eval
-    Client -->|JSON request| Router --> Validate
-    Validate -->|prompt| Policy
+    Client -->|JSON request| Router
+    Router -->|prompt| Policy
     Policy -->|rewards and distributions| Router -->|JSON response| Client

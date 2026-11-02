@@ -3,7 +3,7 @@
 ``train_dpo`` ascends a hand-derived gradient. This test recomputes the same DPO loss with
 NumPy and differentiates it by finite differences - an independent implementation - and
 asserts the two gradients agree. NumPy is an optional ``validation`` dependency, so this test
-is skipped when it is not installed and the core library stays zero dependency.
+is skipped when it is not installed; the core library does not require it.
 
 Run with: uv sync --group validation && uv run pytest tests/test_gradient_parity.py
 """

@@ -2,8 +2,7 @@
 
 ## Overview
 - **What it is:** a from-scratch three-stage RLHF pipeline (behavior-cloned reference,
-  Bradley-Terry reward model, clipped PPO) over log-linear policies, with zero runtime
-  dependencies and an explicit reward over-optimization study.
+  Bradley-Terry reward model, clipped PPO) over log-linear policies, with an explicit reward over-optimization study.
 - **Base model(s):** from-scratch; no pretrained components.
 - **Version and date:** 1.0, 2026-01-01.
 
