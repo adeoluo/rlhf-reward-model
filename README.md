@@ -1,7 +1,7 @@
 <h1 align="center">RLHF Reward Model</h1>
 
 <p align="center">
-  <em>Classical RLHF built from scratch: a Bradley-Terry reward model fit from preferences and a clipped PPO policy optimizer, with an explicit demonstration of reward over-optimization, all dependency-free.</em>
+  <em>Classical RLHF built from scratch: a Bradley-Terry reward model with PPO, a from-scratch DPO implementation and a head-to-head PPO-vs-DPO comparison, and an explicit reward over-optimization study, all dependency-free.</em>
 </p>
 
 <p align="center">
@@ -23,9 +23,11 @@ instruction-following assistants. It has three stages: supervised fine-tuning, t
 with a clipped policy gradient while a KL penalty holds it near the reference. This project
 implements the whole pipeline **from scratch** on a tractable alignment task: a
 reference fit by **behavior cloning**, a **Bradley-Terry reward model** fit by convex logistic
-regression, and **PPO** with a clipped surrogate and KL-shaped reward, all with **zero runtime
-dependencies** and no automatic differentiation. It also demonstrates the failure mode that
-makes reward modeling hard: **reward over-optimization**.
+regression, and **PPO** with a clipped surrogate and KL-shaped reward. It also implements the
+reward-model-free alternative, **Direct Preference Optimization (DPO)**, and runs a **head-to-head
+PPO-vs-DPO comparison** on the same task - all with **zero runtime dependencies** and no automatic
+differentiation. Finally it demonstrates the failure mode that makes reward modeling hard:
+**reward over-optimization**.
 
 ## Architecture
 
@@ -50,6 +52,10 @@ true reward. See the [ADRs](docs/adr/) for the key decisions.
   `shaped = reward_model(y) - beta * (log policy_old(y) - log reference(y))`, and each iteration
   samples from the current policy, estimates a per-prompt baseline, and takes clipped gradient
   steps. The policy-gradient term for the log-linear policy is exact.
+- **DPO.** Direct Preference Optimization skips the reward model and fits the policy straight to
+  the preferences with a single logistic loss on the implicit reward margin
+  `beta * log(policy / reference)`. For the log-linear policy the gradient is exact and
+  dependency-free, so PPO and DPO share the same optimizer and differ only in method.
 
 ## Results
 
@@ -87,7 +93,40 @@ is **not** benchmarked against compiled numerical libraries; wall-clock and thro
 measured on a shared development machine and will vary. Reproduce with
 `uv run python benchmarks/scale.py`.
 
+## PPO vs DPO
+
+> Reproduce with `python -m rlhf_reward_model methods` (or `uv run python benchmarks/compare_methods.py`).
+> PPO and DPO are given the **same** reference, the **same** preferences, and the **same**
+> full-batch optimizer, so the comparison isolates the method.
+
+| Method | true reward | gap closed (reference → optimal) | mean KL to reference |
+|---|---:|---:|---:|
+| **PPO** (reward model + clipped policy gradient) | **1.1247** | **96.6%** | 1.67 |
+| **DPO** (direct, no reward model) | 1.0839 | 89.2% | **1.08** |
+
+Sample efficiency - true reward reached as the number of preference pairs grows:
+
+| preference pairs | PPO | DPO |
+|---:|---:|---:|
+| 250 | 1.0144 | 1.0074 |
+| 500 | 1.0438 | 1.0308 |
+| 1,000 | 1.0862 | 1.0247 |
+| 2,000 | 1.0897 | 1.0740 |
+| 4,000 | **1.1247** | 1.0839 |
+
+Honest reading: on this synthetic task, **PPO reaches a higher true reward** (closing 96.6% of
+the gap vs. 89.2% for DPO) and stays ahead at every data budget - because its explicit reward
+model recovers the hidden reward almost exactly (**r = 0.998**), giving the policy a dense,
+well-specified target to optimize. **DPO is simpler** (no reward model, one loss) and reaches a
+comparable policy at a **lower KL to the reference** (1.08 vs. 1.67), i.e. a gentler update. The
+gap is small and specific to this well-specified linear setting; the point is the measured,
+apples-to-apples comparison of the two methods built from the same parts, not a universal claim
+that one dominates. Both betas are tuned so neither method is handicapped.
+
 ## Reward over-optimization (Goodhart's law)
+
+> Reproduce with `python -m rlhf_reward_model overoptimize` (exposed as the library's
+> `overoptimization_study`).
 
 A reward model is a proxy. Optimizing a proxy too hard eventually hurts the true objective. With
 a deliberately **misspecified** reward model (given only 4 of the 12 features), decreasing the
@@ -122,15 +161,20 @@ make all                      # lint + type-check + test
 
 python -m rlhf_reward_model evaluate        # full pipeline and RLHF report
 python -m rlhf_reward_model compare         # greedy choice before and after PPO
+python -m rlhf_reward_model methods         # PPO vs DPO head to head
+python -m rlhf_reward_model overoptimize    # the reward over-optimization curve
 ```
 
 Use the pieces directly:
 
 ```python
-from rlhf_reward_model import run_pipeline, PipelineConfig
+from rlhf_reward_model import run_pipeline, PipelineConfig, compare_ppo_dpo
 
 result = run_pipeline(PipelineConfig(beta=0.05))
 print(result.report.format())
+
+comparison = compare_ppo_dpo()  # train PPO and DPO on the same task
+print(comparison.format())
 ```
 
 ## Running the service
