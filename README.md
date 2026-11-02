@@ -226,6 +226,18 @@ Reward model accuracy, then reward overoptimization as the policy is pushed furt
   <img src="docs/demo/evaluate.gif" alt="Reward model accuracy, then reward overoptimization as the policy is pushed further" width="860">
 </p>
 
+The HTTP service: learned versus true reward for each response, then the pipeline report.
+
+<p align="center">
+  <img src="docs/demo/http.gif" alt="The HTTP service: learned versus true reward for each response, then the pipeline report" width="860">
+</p>
+
+The reference and the PPO policy's greedy choice for each prompt, against the gold-best response.
+
+<p align="center">
+  <img src="docs/demo/compare.gif" alt="The reference and the PPO policy's greedy choice for each prompt, against the gold-best response" width="860">
+</p>
+
 ## Design decisions
 
 - **A reward model and PPO, not Direct Preference Optimization.** The classical pipeline keeps
