@@ -7,7 +7,7 @@ differences - an implementation sharing no code with the analytic gradient - and
 two. If the hand-derived gradient is correct they must agree to numerical precision.
 
 NumPy is an optional ``validation`` dependency, so the accompanying test is skipped when it is
-not installed and the core library stays zero-dependency. Run with:
+not installed; the core library does not require it. Run with:
 
     uv sync --group validation && uv run python benchmarks/gradient_check.py
 """

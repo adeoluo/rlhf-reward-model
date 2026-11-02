@@ -11,7 +11,7 @@ preference (chosen y_w over rejected y_l given prompt x) is
 
 the implicit reward being ``beta * log(pi / pi_ref)``. For the log-linear policy used here the
 log-probability difference ``log pi(y_w|x) - log pi(y_l|x)`` equals the logit difference (the
-normalizer cancels), so the whole gradient is exact and dependency-free:
+normalizer cancels), so the whole gradient is exact and closed-form:
 
     dL/dw = -sigmoid(-h) * beta * (phi(x, y_w) - phi(x, y_l)),
 

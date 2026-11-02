@@ -1,7 +1,7 @@
 [project]
 name = "rlhf-reward-model"
 version = "0.1.0"
-description = "A Bradley-Terry reward model with PPO and DPO policy optimization from scratch, dependency-free."
+description = "A Bradley-Terry reward model with PPO and DPO policy optimization, built from scratch."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -17,8 +17,8 @@ dev = [
 ]
 # Optional, opt-in only: an independent check that the hand-derived DPO gradient
 # (benchmarks/gradient_check.py, tests/test_gradient_parity.py) matches a NumPy
-# finite-difference reference. Not installed by default CI, so the core library stays zero
-# dependency. Run with: uv sync --group validation && uv run pytest tests/test_gradient_parity.py
+# finite-difference reference. Not installed by default CI; the core library does not require it.
+# Run with: uv sync --group validation && uv run pytest tests/test_gradient_parity.py
 validation = [
     "numpy>=1.24",
 ]

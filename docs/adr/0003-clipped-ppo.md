@@ -18,7 +18,7 @@ gradient steps with the exact policy-gradient term `phi(y) - E_policy[phi]`.
 
 ## Consequences
 - Clipping bounds each update so a single batch cannot move the policy arbitrarily far, which is
-  what makes the reinforcement stage stable in pure Python.
+  what makes the reinforcement stage stable.
 - Folding the KL penalty into the reward keeps the objective a standard advantage-weighted
   surrogate, and beta is the single knob that trades reward for divergence.
 - The baseline is a per-prompt mean rather than a learned critic, which suffices for a bandit;

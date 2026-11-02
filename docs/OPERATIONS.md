@@ -1,8 +1,8 @@
 # Operations Guide - RLHF Reward Model
 
 The service is a single stateless process that runs the three-stage RLHF pipeline once at
-startup and then answers read-only queries about the reward model and the policies. It has zero
-runtime dependencies and binds only the Python standard library HTTP server.
+startup and then answers read-only queries about the reward model and the policies. It runs on
+the Python standard library HTTP server.
 
 ## Service contract
 

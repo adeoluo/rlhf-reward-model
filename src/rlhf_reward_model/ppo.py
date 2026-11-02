@@ -10,7 +10,7 @@ Each iteration samples responses from the current policy (the behavior policy fo
 that iteration), estimates a per-prompt baseline from those samples, and takes
 several clipped gradient steps. The gradient of ``log policy(y|x)`` for the
 log-linear policy is the response feature vector minus the policy's expected
-feature vector, so the whole update is exact and dependency-free.
+feature vector, so the whole update is exact and closed-form.
 """
 
 from __future__ import annotations
