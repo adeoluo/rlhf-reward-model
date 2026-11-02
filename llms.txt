@@ -1,0 +1,41 @@
+# RLHF Reward Model
+
+> Classical RLHF built from scratch: a Bradley-Terry reward model with PPO, a from-scratch DPO implementation and a head-to-head PPO-vs-DPO comparison, and an explicit reward over-optimization study.
+
+Languages: Python. License: MIT. Source: https://github.com/adeoluo/rlhf-reward-model
+
+## Docs
+
+- [README](https://github.com/adeoluo/rlhf-reward-model/blob/main/README.md): motivation, architecture, results, quickstart, usage, design decisions, testing, responsible ai, limitations, roadmap
+- [AGENTS.md](https://github.com/adeoluo/rlhf-reward-model/blob/main/AGENTS.md): layout, commands and conventions for changing the code
+- [Architecture diagram](https://github.com/adeoluo/rlhf-reward-model/blob/main/docs/architecture/architecture.mmd): Mermaid source of the component diagram
+- [Case Study - From preferences to a policy, and the proxy trap](https://github.com/adeoluo/rlhf-reward-model/blob/main/docs/CASE_STUDY.md)
+- [Data Card - RLHF Reward Model](https://github.com/adeoluo/rlhf-reward-model/blob/main/docs/DATA_CARD.md)
+- [Definition of Done](https://github.com/adeoluo/rlhf-reward-model/blob/main/docs/DEFINITION_OF_DONE.md)
+- [Evaluation Report - RLHF Reward Model](https://github.com/adeoluo/rlhf-reward-model/blob/main/docs/EVALUATION_REPORT.md)
+- [Model / System Card - RLHF Reward Model](https://github.com/adeoluo/rlhf-reward-model/blob/main/docs/MODEL_CARD.md)
+- [Operations Guide - RLHF Reward Model](https://github.com/adeoluo/rlhf-reward-model/blob/main/docs/OPERATIONS.md)
+- [Scaling - RLHF Reward Model](https://github.com/adeoluo/rlhf-reward-model/blob/main/docs/SCALING.md)
+- [Threat Model - RLHF Reward Model](https://github.com/adeoluo/rlhf-reward-model/blob/main/docs/THREAT_MODEL.md)
+- [ADR-0001: Record architecture decisions](https://github.com/adeoluo/rlhf-reward-model/blob/main/docs/adr/0001-record-architecture-decisions.md)
+- [ADR-0002: A reward model and PPO, not Direct Preference Optimization](https://github.com/adeoluo/rlhf-reward-model/blob/main/docs/adr/0002-reward-model-and-ppo.md)
+- [ADR-0003: A clipped PPO surrogate with a KL-shaped reward](https://github.com/adeoluo/rlhf-reward-model/blob/main/docs/adr/0003-clipped-ppo.md)
+- [ADR-NNNN: <short title>](https://github.com/adeoluo/rlhf-reward-model/blob/main/docs/adr/template.md)
+- [Changelog](https://github.com/adeoluo/rlhf-reward-model/blob/main/CHANGELOG.md): release history
+
+## Source
+
+- [src/rlhf_reward_model/__init__.py](https://github.com/adeoluo/rlhf-reward-model/blob/main/src/rlhf_reward_model/__init__.py): RLHF Reward Model - a Bradley-Terry reward model, PPO, and DPO from scratch.
+- [src/rlhf_reward_model/cli.py](https://github.com/adeoluo/rlhf-reward-model/blob/main/src/rlhf_reward_model/cli.py): Command line interface for the RLHF reward-model pipeline.
+- [src/rlhf_reward_model/comparison.py](https://github.com/adeoluo/rlhf-reward-model/blob/main/src/rlhf_reward_model/comparison.py): A head-to-head comparison of PPO and DPO on the same synthetic preference task.
+- [src/rlhf_reward_model/domain.py](https://github.com/adeoluo/rlhf-reward-model/blob/main/src/rlhf_reward_model/domain.py): The alignment task: prompts, candidate responses, and a hidden gold reward.
+- [src/rlhf_reward_model/dpo.py](https://github.com/adeoluo/rlhf-reward-model/blob/main/src/rlhf_reward_model/dpo.py): Direct Preference Optimization (DPO) on the log-linear policy.
+- [src/rlhf_reward_model/evaluation.py](https://github.com/adeoluo/rlhf-reward-model/blob/main/src/rlhf_reward_model/evaluation.py): Evaluation for the RLHF pipeline: reward model fidelity and policy improvement.
+- [src/rlhf_reward_model/observability.py](https://github.com/adeoluo/rlhf-reward-model/blob/main/src/rlhf_reward_model/observability.py): In-process request metrics for the HTTP service (Prometheus text exposition).
+- [src/rlhf_reward_model/overoptimization.py](https://github.com/adeoluo/rlhf-reward-model/blob/main/src/rlhf_reward_model/overoptimization.py): Reward over-optimization (Goodhart's law) as a measured, first-class study.
+- [src/rlhf_reward_model/pipeline.py](https://github.com/adeoluo/rlhf-reward-model/blob/main/src/rlhf_reward_model/pipeline.py): The end-to-end RLHF pipeline: SFT, reward model, PPO, and evaluation.
+- [src/rlhf_reward_model/policy.py](https://github.com/adeoluo/rlhf-reward-model/blob/main/src/rlhf_reward_model/policy.py): A log-linear softmax policy over candidate responses.
+- [src/rlhf_reward_model/ppo.py](https://github.com/adeoluo/rlhf-reward-model/blob/main/src/rlhf_reward_model/ppo.py): PPO-style policy optimization against a learned reward.
+- [src/rlhf_reward_model/reward_model.py](https://github.com/adeoluo/rlhf-reward-model/blob/main/src/rlhf_reward_model/reward_model.py): A Bradley-Terry reward model fit from pairwise preferences.
+- [src/rlhf_reward_model/service.py](https://github.com/adeoluo/rlhf-reward-model/blob/main/src/rlhf_reward_model/service.py): A standard-library HTTP service exposing the RLHF reward model and policy.
+- [src/rlhf_reward_model/sft.py](https://github.com/adeoluo/rlhf-reward-model/blob/main/src/rlhf_reward_model/sft.py): Supervised fine-tuning by behavior cloning.
