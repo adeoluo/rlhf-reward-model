@@ -3,9 +3,17 @@ name = "rlhf-reward-model"
 version = "0.1.0"
 description = "A Bradley-Terry reward model with PPO and DPO policy optimization, built from scratch."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [{ name = "Adeolu Ogunnoiki" }]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+]
 dependencies = []
 
 [dependency-groups]
@@ -35,7 +43,7 @@ packages = ["src/rlhf_reward_model"]
 # ---------------------------------------------------------------------------
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py312"
 src = ["src", "tests"]
 
 [tool.ruff.lint]
@@ -46,7 +54,7 @@ ignore = []
 known-first-party = ["rlhf_reward_model"]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 strict = true
 warn_unused_configs = true
 disallow_untyped_defs = true
