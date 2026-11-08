@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://github.com/adeoluo/rlhf-reward-model/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/adeoluo/rlhf-reward-model/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/adeoluo/rlhf-reward-model/releases"><img alt="Release" src="https://img.shields.io/github/v/release/adeoluo/rlhf-reward-model"></a>
-  <img alt="Python" src="https://img.shields.io/badge/python-3.11%20%7C%203.12-blue">
+  <img alt="Python" src="https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14%20%7C%203.15-blue">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-green"></a>
 </p>
 
@@ -275,7 +275,7 @@ The suite has 24 deterministic, offline tests in six modules under `tests/`:
   health, readiness, `/report`, `/score`, unknown routes, and metrics.
 
 CI (`.github/workflows/ci.yml`) runs `ruff format --check`, `ruff check`, `mypy src`, and
-`pytest` with an 80% coverage gate on Python 3.11 and 3.12, then builds the package and the
+`pytest` with an 80% coverage gate on Python 3.12, 3.13, 3.14 and 3.15, then builds the package and the
 Docker image.
 
 ## Responsible AI
