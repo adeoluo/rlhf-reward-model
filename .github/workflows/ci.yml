@@ -45,7 +45,7 @@ jobs:
         run: uv run mypy src
 
       - name: Test (+ coverage gate)
-        run: uv run pytest -m "not slow" --cov=src --cov-report=xml --cov-report=term-missing --cov-fail-under=80
+        run: uv run pytest -m "not slow and not docs" --cov=src --cov-report=xml --cov-report=term-missing --cov-fail-under=80
 
       - name: Upload coverage
         if: matrix.python-version == '3.12'
@@ -53,6 +53,26 @@ jobs:
         with:
           name: coverage
           path: coverage.xml
+
+  docs-current:
+    name: tables in the docs match a fresh run
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: true
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev --group validation
+
+      - name: Rerun the experiments and compare with the README and the report
+        run: uv run pytest -m docs -v --no-cov
 
   build:
     name: build package

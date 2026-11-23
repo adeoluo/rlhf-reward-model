@@ -63,6 +63,7 @@ disallow_untyped_defs = true
 addopts = "-ra -q"
 testpaths = ["tests"]
 markers = [
+    "docs: reruns the experiments behind the tables in the README; run in its own CI job without coverage tracing, which slows them several times over.",
     "slow: full-fidelity experiments (the over-optimization turn-over needs the full training budget); excluded from the default CI run and reproduced by the benchmarks.",
 ]
 

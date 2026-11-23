@@ -149,11 +149,17 @@ KL penalty keeps raising the proxy reward while the **true reward peaks and then
 
 | beta | proxy reward | true reward | mean KL |
 |---:|---:|---:|---:|
-| 0.20 | 0.233 | 0.846 | 0.89 |
-| 0.10 | 0.340 | **0.940** | 1.59 |
+| 0.20 | 0.238 | 0.824 | 0.92 |
+| 0.10 | 0.340 | **0.938** | 1.60 |
 | 0.05 | 0.414 | 0.934 | 2.60 |
 | 0.02 | 0.458 | 0.859 | 3.82 |
 | 0.01 | 0.458 | 0.858 | 3.83 |
+
+These figures are from Linux x86-64, the platform CI checks them on. On Apple Silicon the first
+two rows come out as `0.233 / 0.846 / 0.89` and `0.340 / 0.940 / 1.59`, because the linear-algebra
+library rounds differently and sixty PPO iterations amplify it; the other rows and the shape of
+the curve are the same. An earlier version of this table quoted the Apple values without saying
+so, which is why a rerun on Linux did not match it.
 
 This is the central cautionary result of reward modeling, reproduced from scratch: the proxy
 rises monotonically, the truth turns over, and the KL budget is the control knob.

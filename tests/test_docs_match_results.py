@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import sys
 from pathlib import Path
 
 import pytest
@@ -12,6 +13,13 @@ from rlhf_reward_model.overoptimization import OveroptimizationStudy, overoptimi
 from rlhf_reward_model.pipeline import PipelineConfig, run_pipeline
 
 ROOT = Path(__file__).resolve().parent.parent
+pytestmark = pytest.mark.docs
+
+# The tables quote Linux figures. Elsewhere the last quoted digits can move with the BLAS in use.
+EXACT = sys.platform == "linux"
+REWARD_TOLERANCE = 2e-3 if EXACT else 3e-2
+KL_TOLERANCE = 2e-2 if EXACT else 5e-2
+
 ROW = re.compile(r"^\| (0\.\d+) \| ([\d.]+) \| \**([\d.]+)\** \| ([\d.]+) \|$", re.M)
 
 
@@ -35,9 +43,9 @@ def test_overoptimization_table_matches_a_fresh_run(
     ]
     for row in study.rows:
         proxy, true, kl = quoted[row.beta]
-        assert proxy == pytest.approx(row.proxy_reward, abs=2e-3), (path, fresh)
-        assert true == pytest.approx(row.true_reward, abs=2e-3), (path, fresh)
-        assert kl == pytest.approx(row.mean_kl, abs=2e-2), (path, fresh)
+        assert proxy == pytest.approx(row.proxy_reward, abs=REWARD_TOLERANCE), (path, fresh)
+        assert true == pytest.approx(row.true_reward, abs=REWARD_TOLERANCE), (path, fresh)
+        assert kl == pytest.approx(row.mean_kl, abs=KL_TOLERANCE), (path, fresh)
 
 
 def test_headline_table_matches_a_fresh_run() -> None:
