@@ -2,19 +2,14 @@ flowchart LR
     classDef edge     fill:#F59E0B,stroke:#1E293B,color:#1E293B,stroke-width:1px;
     classDef core     fill:#6366F1,stroke:#1E293B,color:#ffffff,stroke-width:1px;
     classDef data     fill:#10B981,stroke:#1E293B,color:#ffffff,stroke-width:1px;
-    classDef control  fill:#0EA5E9,stroke:#1E293B,color:#ffffff,stroke-width:1px;
     classDef obs      fill:#CBD5E1,stroke:#1E293B,color:#1E293B,stroke-width:1px;
 
-    subgraph Interfaces["Interfaces"]
+    subgraph Interfaces["CLI & Benchmarks"]
         direction TB
-        CLI["CLI<br/>evaluate, methods, ..."]:::edge
-        Client(["HTTP client"]):::edge
-        Router["HTTP router<br/>/report /score"]:::core
-        Validate["Validation<br/>prompt in range"]:::control
-        CLI ~~~ Client --> Router --> Validate
+        CLI["CLI<br/>evaluate, compare, methods, overoptimize"]:::edge
     end
 
-    subgraph Task["Alignment task"]
+    subgraph Task["Synthetic Alignment Task"]
         direction TB
         Gold[("Gold reward<br/>hidden from learner")]:::data
         Demos[("Demonstrations<br/>weak teacher")]:::data
@@ -23,7 +18,7 @@ flowchart LR
         Gold --> Prefs
     end
 
-    subgraph Methods["Post-training methods"]
+    subgraph Methods["Post-Training Methods"]
         direction TB
         SFT["SFT<br/>behavior cloning"]:::core
         RM["Reward model<br/>Bradley-Terry fit"]:::core
@@ -33,16 +28,15 @@ flowchart LR
         DPO ~~~ SFT ~~~ RM --> PPO --> Policies
     end
 
-    subgraph Obs["Evaluation and studies"]
+    subgraph Obs["Evaluation & Studies"]
         direction TB
         Report["RLHF report<br/>RM fidelity, reward, KL"]:::obs
         Compare["PPO vs DPO<br/>quality, data efficiency"]:::obs
         Overopt["Over-optimization<br/>proxy vs true reward"]:::obs
-        Score["Score response<br/>rewards, probabilities"]:::obs
-        Metrics["Route metrics<br/>Prometheus text"]:::obs
-        Report ~~~ Compare ~~~ Overopt ~~~ Score ~~~ Metrics
+        Parity["NumPy gradient check<br/>finite-diff DPO parity"]:::obs
+        Report ~~~ Compare ~~~ Overopt ~~~ Parity
     end
 
-    Interfaces -->|train, query| Methods
+    Interfaces -->|run| Methods
     Task -->|demos, preferences| Methods
     Methods -->|trained models| Obs

@@ -86,12 +86,6 @@ def _cmd_overoptimize(args: argparse.Namespace) -> None:
     print(f"  true reward peaks at beta={study.best_beta} ({study.best_true_reward:.4f}).")
 
 
-def _cmd_serve(args: argparse.Namespace) -> None:
-    from rlhf_reward_model.service import serve
-
-    serve(host=args.host, port=args.port)
-
-
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="rlhf-reward-model", description=__doc__)
     parser.add_argument("--beta", type=float, default=0.05, help="PPO KL-penalty strength")
@@ -111,16 +105,11 @@ def main(argv: list[str] | None = None) -> None:
     overopt.add_argument("--demonstrations", type=int, default=600, help="SFT demonstrations")
     overopt.add_argument("--ppo-iterations", type=int, default=60, dest="ppo_iterations")
 
-    serve = sub.add_parser("serve", help="start the HTTP service")
-    serve.add_argument("--host", default="127.0.0.1")
-    serve.add_argument("--port", type=int, default=8000)
-
     handlers = {
         "evaluate": _cmd_evaluate,
         "compare": _cmd_compare,
         "methods": _cmd_methods,
         "overoptimize": _cmd_overoptimize,
-        "serve": _cmd_serve,
     }
     args = parser.parse_args(argv)
     handlers[args.command](args)

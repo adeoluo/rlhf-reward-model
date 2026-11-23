@@ -40,8 +40,7 @@ Bradley-Terry preference pairs. The pipeline runner behavior-clones a reference,
 model on the preferences, and optimizes a PPO policy against the learned reward with a KL
 anchor to the reference; DPO fits a policy straight to the same preferences. The learner never
 sees the true reward. The report, the PPO versus DPO comparison, and the over-optimization
-study measure the outcome against the gold reward, and the HTTP service serves the trained
-models with per-route metrics. See the [ADRs](docs/adr/) for the key decisions.
+study measure the outcome against the gold reward. See the [ADRs](docs/adr/) for the key decisions.
 
 ### The pipeline
 
@@ -197,25 +196,6 @@ comparison = compare_ppo_dpo()  # train PPO and DPO on the same task
 print(comparison.format())
 ```
 
-### HTTP service
-
-A standard-library HTTP service runs the pipeline once at startup and serves reward queries:
-
-```bash
-python -m rlhf_reward_model serve --port 8000
-
-curl localhost:8000/health
-curl localhost:8000/report
-curl -s -X POST localhost:8000/score -d '{"prompt": 0}'
-```
-
-See the [operations guide](docs/OPERATIONS.md) for the service contract and constraints. The
-service also exposes `GET /ready` (readiness) and `GET /metrics` (per-route request, error, and
-latency metrics in Prometheus text format). A production-style stress benchmark
-(`uv run python benchmarks/stress.py`) reports throughput and p50/p95/p99 latency; the scaling
-path and tradeoffs are in [docs/SCALING.md](docs/SCALING.md) and a full walk-through is in the
-[case study](docs/CASE_STUDY.md).
-
 ### Demos
 
 Recorded from real runs with [vhs](https://github.com/charmbracelet/vhs); each tape is in `docs/demo/`.
@@ -224,12 +204,6 @@ Reward model accuracy, then reward overoptimization as the policy is pushed furt
 
 <p align="center">
   <img src="docs/demo/evaluate.gif" alt="Reward model accuracy, then reward overoptimization as the policy is pushed further" width="860">
-</p>
-
-The HTTP service: learned versus true reward for each response, then the pipeline report.
-
-<p align="center">
-  <img src="docs/demo/http.gif" alt="The HTTP service: learned versus true reward for each response, then the pipeline report" width="860">
 </p>
 
 The reference and the PPO policy's greedy choice for each prompt, against the gold-best response.
@@ -255,7 +229,7 @@ make test                     # uv run pytest
 make coverage                 # pytest with an 80% coverage gate
 ```
 
-The suite has 24 deterministic, offline tests in six modules under `tests/`:
+The suite has deterministic, offline tests under `tests/`:
 
 - **Core** (`test_core.py`): the reward model recovers the true reward, a misspecified reward
   model is worse, PPO improves the policy's true reward, the evaluation report is consistent,
@@ -265,24 +239,15 @@ The suite has 24 deterministic, offline tests in six modules under `tests/`:
   deterministic.
 - **Gradient parity** (`test_gradient_parity.py`): an independent check that recomputes the
   DPO loss with NumPy and differentiates it by finite differences, asserting agreement with
-  the hand-derived gradient. NumPy is an optional `validation` dependency group, so the test is
-  skipped when it is not installed (`uv sync --group validation` to enable it).
+  the hand-derived gradient (enabled automatically in CI via `--group validation`).
 - **Method studies** (`test_methods.py`): PPO and DPO both improve over the reference, the
   sample-efficiency table matches the requested sizes, the over-optimization curve turns over,
   and the study output is well formed.
-- **CLI and HTTP service** (`test_cli.py`, `test_service.py`): the `methods` and
-  `overoptimize` commands (and that a subcommand is required), and the request handler for
-  health, readiness, `/report`, `/score`, unknown routes, and metrics.
+- **CLI** (`test_cli.py`): `evaluate`, `compare`, `methods`, and `overoptimize` subcommands.
 
 CI (`.github/workflows/ci.yml`) runs `ruff format --check`, `ruff check`, `mypy src`, and
-`pytest` with an 80% coverage gate on Python 3.12, 3.13, 3.14 and 3.15, then builds the package and the
-Docker image.
-
-## Responsible AI
-
-- **Model card:** [docs/MODEL_CARD.md](docs/MODEL_CARD.md)
-- **Data card:** [docs/DATA_CARD.md](docs/DATA_CARD.md)
-- **Threat model:** [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md)
+`pytest` with an 80% coverage gate (including NumPy finite-difference parity) on Python 3.12,
+3.13, 3.14 and 3.15, then builds the package.
 
 ## Limitations
 

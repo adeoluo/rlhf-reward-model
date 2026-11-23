@@ -10,7 +10,6 @@ Classical RLHF built from scratch: a Bradley-Terry reward model with PPO, a from
 ## Layout
 
 - `benchmarks/`: benchmark scripts and recorded results
-- `docker-compose.yml`: local container setup
 - `docs/`: documentation, architecture diagram source and render, design records
 - `scripts/`: maintenance scripts (release, assets, data)
 - `src/`: library and service source
@@ -24,13 +23,11 @@ Key modules:
 - `src/rlhf_reward_model/domain.py`: The alignment task: prompts, candidate responses, and a hidden gold reward.
 - `src/rlhf_reward_model/dpo.py`: Direct Preference Optimization (DPO) on the log-linear policy.
 - `src/rlhf_reward_model/evaluation.py`: Evaluation for the RLHF pipeline: reward model fidelity and policy improvement.
-- `src/rlhf_reward_model/observability.py`: In-process request metrics for the HTTP service (Prometheus text exposition).
 - `src/rlhf_reward_model/overoptimization.py`: Reward over-optimization (Goodhart's law) as a measured, first-class study.
 - `src/rlhf_reward_model/pipeline.py`: The end-to-end RLHF pipeline: SFT, reward model, PPO, and evaluation.
 - `src/rlhf_reward_model/policy.py`: A log-linear softmax policy over candidate responses.
 - `src/rlhf_reward_model/ppo.py`: PPO-style policy optimization against a learned reward.
 - `src/rlhf_reward_model/reward_model.py`: A Bradley-Terry reward model fit from pairwise preferences.
-- `src/rlhf_reward_model/service.py`: A standard-library HTTP service exposing the RLHF reward model and policy.
 - `src/rlhf_reward_model/sft.py`: Supervised fine-tuning by behavior cloning.
 
 ## Commands
@@ -45,10 +42,7 @@ Key modules:
 | `make test` | Run tests |
 | `make coverage` | Tests with coverage gate |
 | `make evaluation` | Reproduce the results table |
-| `make run` | Run the application entrypoint |
 | `make diagram` | Render architecture diagram to SVG |
-| `make docker-build` | Build the image |
-| `make docker-up` | Run via docker compose |
 | `make clean` | Remove caches and artifacts |
 | `make all` | Full local gate (mirror of continuous integration) |
 | `make changelog` | Regenerate CHANGELOG.md from Conventional Commits (git-cliff) |

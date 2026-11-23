@@ -1,4 +1,3 @@
-.PHONY: help setup lint format type test coverage evaluation run diagram docker-build docker-up clean all changelog cut-release
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -36,11 +35,7 @@ diagram: ## Render every diagram in docs/architecture to SVG (house theme, white
 		npx -y @mermaid-js/mermaid-cli -q -i "$$f" -o "$${f%.mmd}.svg" -c mermaid.config.json -b white || exit 1; \
 	done
 
-docker-build: ## Build the image
-	docker build -t rlhf-reward-model .
 
-docker-up: ## Run via docker compose
-	docker compose up --build
 
 clean: ## Remove caches and artifacts
 	rm -rf .pytest_cache .mypy_cache .ruff_cache dist build *.egg-info coverage.xml
