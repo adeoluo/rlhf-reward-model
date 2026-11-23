@@ -15,7 +15,7 @@
 
 > **Evidence level: unit tested.** Gradients are checked against finite differences. Every experiment runs on a synthetic 12-feature task with no language model. Not independently reproduced and not used in production. [What the levels mean](https://github.com/adeoluo#evidence-levels).
 
-## Summary
+## Highlights
 
 Chat models are tuned with human preferences: people pick the better of two answers, a
 "reward model" learns their taste, and the chat model is trained to score well on it. This
