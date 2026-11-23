@@ -13,6 +13,8 @@
 
 ---
 
+> **Evidence level: unit tested.** Gradients are checked against finite differences. Every experiment runs on a synthetic 12-feature task with no language model. Not independently reproduced and not used in production. [What the levels mean](https://github.com/adeoluo#evidence-levels).
+
 ## Motivation
 
 Reinforcement learning from human feedback is the classical post-training recipe behind
