@@ -15,6 +15,21 @@
 
 > **Evidence level: unit tested.** Gradients are checked against finite differences. Every experiment runs on a synthetic 12-feature task with no language model. Not independently reproduced and not used in production. [What the levels mean](https://github.com/adeoluo#evidence-levels).
 
+## In plain English
+
+Chat models are tuned with human preferences: people pick the better of two answers, a
+"reward model" learns their taste, and the chat model is trained to score well on it. This
+project is a small working copy of that whole loop.
+
+- **The reward model learned the hidden taste almost perfectly** (correlation 0.998).
+- **Training on that reward worked.** The PPO method closed 96.6% of the gap to the best
+  possible behavior, and the DPO method closed 89.2%.
+- **The learning math is checked** against a slow but simple numerical method.
+
+**Where it falls short:** everything runs on a made-up task with 12 numbers per example.
+There is no language model in it. It shows how the method works, not how a real chatbot
+would behave.
+
 ## Motivation
 
 Reinforcement learning from human feedback is the classical post-training recipe behind
