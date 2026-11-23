@@ -25,7 +25,9 @@ coverage: ## Tests with coverage gate
 	uv run pytest --cov=src --cov-report=term-missing --cov-fail-under=80
 
 evaluation: ## Reproduce the results table
-	uv run python -m rlhf_reward_model.evaluation
+	uv run python -m rlhf_reward_model evaluate
+	uv run python -m rlhf_reward_model methods
+	uv run python -m rlhf_reward_model overoptimize
 
 run: ## Run the application entrypoint
 	uv run python -m rlhf_reward_model

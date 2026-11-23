@@ -50,6 +50,6 @@ The proxy reward rises monotonically while the true reward peaks at beta 0.1 and
 The KL budget, not the proxy score, is the quantity to watch when the reward model is imperfect.
 
 ## Throughput
-Supervised fine-tuning takes roughly 0.2 seconds, the reward model roughly 3 seconds, and PPO
-roughly 1 second. The read-only service answers score queries at over 27,000 requests per second
-with sub-millisecond median latency.
+Supervised fine-tuning takes roughly 0.2 seconds, the reward model roughly 4 seconds, and PPO
+roughly 1 second on an Apple M1 (`uv run python benchmarks/benchmark.py`). The project has no
+service; an earlier version of this report quoted the throughput of one that was since removed.
