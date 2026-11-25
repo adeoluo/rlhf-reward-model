@@ -13,7 +13,7 @@
 
 ---
 
-> **Evidence level: unit tested.** One gradient, the hand-derived gradient of the Direct Preference Optimization (DPO) loss, is checked against finite differences, a slow but simple numerical estimate. A gradient is the update direction used in training. Every experiment runs on a synthetic task in which each example is described by 12 numbers, called features, and no language model is involved. The results have not been reproduced by anyone else, and the code is not used in production. [What the levels mean](https://github.com/adeoluo#evidence-levels).
+> **Evidence level: unit tested.** One gradient, the hand-derived gradient of the Direct Preference Optimization (DPO) loss, is checked against finite differences, a slow but simple numerical estimate. A gradient is the update direction used in training. Every experiment runs on a synthetic task in which each example is described by 12 numbers, called features, and no language model is involved. The results have not been reproduced by anyone else, and the code is not used in production.
 
 ## Highlights
 
